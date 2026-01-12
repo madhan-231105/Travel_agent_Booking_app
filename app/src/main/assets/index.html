@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Travel App India</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #FF5722;
+            --primary-dark: #E64A19;
+            --bg: #F5F7FA;
+            --text: #2D3436;
+            --text-light: #636E72;
+            --white: #ffffff;
+            --green: #00b894;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg); color: var(--text); padding-bottom: 90px; }
+
+        /* --- HEADER --- */
+        header {
+            background: var(--white);
+            padding: 20px 25px;
+            position: sticky; top: 0; z-index: 50;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        h1 { font-size: 20px; font-weight: 700; color: var(--primary); letter-spacing: -0.5px; }
+
+        /* --- TABS (VIEWS) --- */
+        .view-section { display: none; animation: fadeIn 0.3s ease; }
+        .view-section.active { display: block; }
+
+        /* --- TRIPS LIST --- */
+        .trips-container { padding: 20px; display: grid; grid-template-columns: 1fr; gap: 20px; }
+
+        .trip-card {
+            background: var(--white);
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+        .trip-card:active { transform: scale(0.98); }
+
+        .card-img { width: 100%; height: 180px; object-fit: cover; }
+
+        .card-details { padding: 18px; }
+        .trip-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+        .trip-title { font-size: 18px; font-weight: 700; color: var(--text); }
+        .trip-rating { font-size: 12px; font-weight: 600; background: #FFF3E0; color: #FF9800; padding: 4px 8px; border-radius: 6px; }
+
+        .trip-desc { font-size: 13px; color: var(--text-light); margin-bottom: 15px; line-height: 1.4; }
+
+        .card-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f0f0f0; padding-top: 15px; }
+        .price-tag { display: flex; flex-direction: column; }
+        .price-label { font-size: 10px; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; }
+        .price-value { font-size: 18px; font-weight: 700; color: var(--primary); }
+
+        .btn-book {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 13px;
+            box-shadow: 0 4px 10px rgba(255, 87, 34, 0.3);
+        }
+
+        /* --- BOOKINGS DASHBOARD (TABLE STYLE) --- */
+        .dashboard-container { padding: 20px; }
+        .stats-card { background: var(--primary); color: white; padding: 20px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(255, 87, 34, 0.3); }
+        .stats-count { font-size: 32px; font-weight: 700; }
+
+        .booking-list-header { font-size: 16px; font-weight: 700; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .refresh-btn { font-size: 12px; color: var(--primary); background: rgba(255,87,34,0.1); padding: 5px 10px; border-radius: 5px; border: none; }
+
+        .booking-item {
+            background: var(--white);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .b-left { display: flex; flex-direction: column; }
+        .b-name { font-weight: 600; font-size: 14px; color: var(--text); }
+        .b-dest { font-size: 12px; color: var(--text-light); margin-top: 2px; }
+        .b-right { text-align: right; }
+        .b-tickets { font-size: 12px; font-weight: 600; background: #E0F2F1; color: var(--green); padding: 4px 8px; border-radius: 4px; }
+        .b-price { font-size: 13px; font-weight: 700; color: var(--primary); margin-top: 4px; }
+
+        /* --- MODAL --- */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: flex; align-items: flex-end; z-index: 100; visibility: hidden; opacity: 0; transition: 0.3s; backdrop-filter: blur(2px); }
+        .modal-overlay.open { visibility: visible; opacity: 1; }
+        .modal-content { background: var(--white); width: 100%; padding: 25px; border-radius: 25px 25px 0 0; transform: translateY(100%); transition: 0.3s; }
+        .modal-overlay.open .modal-content { transform: translateY(0); }
+
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-title { font-size: 18px; font-weight: 700; }
+        .close-btn { font-size: 24px; color: #999; background: none; border: none; }
+
+        .form-group { margin-bottom: 15px; }
+        .label { font-size: 12px; font-weight: 600; color: var(--text-light); margin-bottom: 5px; display: block; }
+        .form-input { width: 100%; padding: 14px; border: 1px solid #eee; background: #f9f9f9; border-radius: 10px; font-size: 14px; font-family: 'Poppins', sans-serif; outline: none; transition: 0.2s; }
+        .form-input:focus { border-color: var(--primary); background: #fff; }
+
+        .total-row { display: flex; justify-content: space-between; margin: 20px 0; padding: 15px; background: #FFF3E0; border-radius: 10px; }
+        .total-text { font-weight: 600; color: var(--primary-dark); }
+
+        .btn-confirm { width: 100%; background: var(--primary); color: white; padding: 16px; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; box-shadow: 0 5px 15px rgba(255, 87, 34, 0.4); }
+
+        /* --- BOTTOM NAV --- */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--white); display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #eee; z-index: 90; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #b2bec3; font-size: 10px; font-weight: 500; transition: 0.2s; }
+        .nav-item.active { color: var(--primary); transform: translateY(-2px); }
+        .nav-icon { font-size: 20px; margin-bottom: 4px; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>🇮🇳 Travel India</h1>
+    <div style="width:35px; height:35px; background:#eee; border-radius:50%; background-image:url('https://i.pravatar.cc/100'); background-size:cover;"></div>
+</header>
+
+<!-- VIEW 1: DESTINATIONS -->
+<div id="view-home" class="view-section active">
+    <div id="trips-container" class="trips-container">Loading amazing places...</div>
+</div>
+
+<!-- VIEW 2: BOOKINGS DASHBOARD -->
+<div id="view-bookings" class="view-section">
+    <div class="dashboard-container">
+        <div class="stats-card">
+            <div style="font-size:12px; opacity:0.8; margin-bottom:5px;">Total Bookings</div>
+            <div class="stats-count" id="total-bookings-count">0</div>
+        </div>
+
+        <div class="booking-list-header">
+            <span>Recent Bookings</span>
+            <button class="refresh-btn" onclick="window.fetchBookings()">↻ Refresh</button>
+        </div>
+
+        <div id="bookings-list">
+            <!-- Bookings will appear here -->
+            <div style="text-align:center; color:#999; padding:20px;">No bookings yet</div>
+        </div>
+    </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+    <div class="nav-item active" onclick="switchTab('home', this)">
+        <span class="nav-icon">🌏</span> Explore
+    </div>
+    <div class="nav-item" onclick="switchTab('bookings', this)">
+        <span class="nav-icon">📋</span> Bookings
+    </div>
+</div>
+
+<!-- BOOKING MODAL -->
+<div class="modal-overlay" id="bookingModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-title">Booking Details</div>
+            <button class="close-btn" onclick="closeModal()">×</button>
+        </div>
+
+        <p id="modal-trip-name" style="margin-bottom: 20px; color: var(--primary); font-weight:700; font-size: 16px;"></p>
+
+        <div class="form-group">
+            <label class="label">Full Name</label>
+            <input type="text" id="userName" class="form-input" placeholder="Enter your full Name">
+        </div>
+
+        <div class="form-group">
+            <label class="label">Tickets</label>
+            <input type="number" id="ticketCount" class="form-input" value="1" min="1" onchange="updateTotal()">
+        </div>
+
+        <div class="total-row">
+            <span class="total-text">Total Price</span>     `
+            <span class="total-text" id="totalPriceDisplay">₹0</span>
+        </div>
+
+        <button class="btn-confirm" onclick="window.submitBooking()">Pay & Book</button>
+    </div>
+</div>
+
+<!-- FIREBASE & LOGIC -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    // YOUR CONFIG
+    const firebaseConfig = {
+      apiKey: "AIzaSyAgpnVl17S6-XvEy6qoaSLM3DtC4dQKD9A",
+      authDomain: "travelapp-3ff51.firebaseapp.com",
+      projectId: "travelapp-3ff51",
+      storageBucket: "travelapp-3ff51.firebasestorage.app",
+      messagingSenderId: "964834825214",
+      appId: "1:964834825214:web:db48fbd4bc47f975a926af"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // --- DATA: INDIAN PLACES ---
+    const tripsData = [
+        { id: 1, name: "Goa Beach Party", price: 15000, rating: 4.8, desc: "Sun, sand, and parties. The perfect getaway.", img: "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=500&q=80" },
+        { id: 2, name: "Manali Mountains", price: 12000, rating: 4.7, desc: "Snow-capped peaks and cozy wooden cottages.", img: "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=500&q=80" },
+        { id: 3, name: "Kerala Backwaters", price: 18000, rating: 4.9, desc: "Relaxing houseboat stay in Alleppey.", img: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=500&q=80" },
+        { id: 4, name: "Jaipur Royals", price: 9500, rating: 4.6, desc: "Explore the pink city and ancient forts.", img: "https://images.unsplash.com/photo-1477587458883-47145ed94245?w=500&q=80" },
+        { id: 5, name: "Ladakh Adventure", price: 25000, rating: 4.9, desc: "The ultimate bike trip and monasteries.", img: "https://images.unsplash.com/photo-1581793745862-99fde7fa73d2?w=500&q=80" }
+    ];
+
+    let selectedTripObj = null;
+
+    // --- RENDER TRIPS ---
+    window.loadTrips = function() {
+        const container = document.getElementById('trips-container');
+        container.innerHTML = "";
+
+        tripsData.forEach(trip => {
+            container.innerHTML += `
+                <div class="trip-card">
+                    <img src="${trip.img}" class="card-img">
+                    <div class="card-details">
+                        <div class="trip-header">
+                            <div class="trip-title">${trip.name}</div>
+                            <div class="trip-rating">★ ${trip.rating}</div>
+                        </div>
+                        <div class="trip-desc">${trip.desc}</div>
+                        <div class="card-footer">
+                            <div class="price-tag">
+                                <span class="price-label">Starting From</span>
+                                <span class="price-value">₹${trip.price.toLocaleString('en-IN')}</span>
+                            </div>
+                            <button class="btn-book" onclick="openModal(${trip.id})">Book Now</button>
+                        </div>
+                    </div>
+                </div>`;
+        });
+    };
+
+    // --- MODAL & CALCULATIONS ---
+    window.openModal = function(id) {
+        selectedTripObj = tripsData.find(t => t.id === id);
+        if(!selectedTripObj) return;
+
+        document.getElementById('modal-trip-name').innerText = "Trip to " + selectedTripObj.name;
+        document.getElementById('ticketCount').value = 1;
+        window.updateTotal();
+        document.getElementById('bookingModal').classList.add('open');
+    };
+
+    window.updateTotal = function() {
+        const count = parseInt(document.getElementById('ticketCount').value) || 1;
+        const total = count * selectedTripObj.price;
+        document.getElementById('totalPriceDisplay').innerText = "₹" + total.toLocaleString('en-IN');
+    };
+
+    window.closeModal = function() {
+        document.getElementById('bookingModal').classList.remove('open');
+    };
+
+    // --- TAB SWITCHING ---
+    window.switchTab = function(tabName, el) {
+        // Update Tab UI
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        el.classList.add('active');
+
+        // Show Section
+        document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+        document.getElementById('view-' + tabName).classList.add('active');
+
+        // Load Data if Dashboard
+        if(tabName === 'bookings') {
+            window.fetchBookings();
+        }
+    };
+
+    // --- SUBMIT BOOKING ---
+    window.submitBooking = async function() {
+        const name = document.getElementById('userName').value;
+        const tickets = parseInt(document.getElementById('ticketCount').value) || 1;
+
+        if(!name) {
+            showNativeToast("Please enter your name");
+            return;
+        }
+
+        const totalCost = tickets * selectedTripObj.price;
+        const btn = document.querySelector('.btn-confirm');
+        btn.innerText = "Processing...";
+        btn.disabled = true;
+
+        try {
+            await addDoc(collection(db, "bookings"), {
+                name: name,
+                destination: selectedTripObj.name,
+                tickets: tickets,
+                totalPrice: totalCost,
+                timestamp: new Date().toISOString()
+            });
+
+            showNativeToast(`✅ Booked! ₹${totalCost.toLocaleString('en-IN')}`);
+            window.closeModal();
+            document.getElementById('userName').value = ""; // Reset
+
+        } catch (e) {
+            console.error(e);
+            showNativeToast("Error: " + e.message);
+        } finally {
+            btn.innerText = "Pay & Book";
+            btn.disabled = false;
+        }
+    };
+
+    // --- FETCH BOOKINGS (ADMIN VIEW) ---
+    window.fetchBookings = async function() {
+        const listContainer = document.getElementById('bookings-list');
+        listContainer.innerHTML = '<div style="text-align:center; padding:20px;">Loading...</div>';
+
+        try {
+            const q = query(collection(db, "bookings"), orderBy("timestamp", "desc"));
+            const querySnapshot = await getDocs(q);
+
+            document.getElementById('total-bookings-count').innerText = querySnapshot.size;
+
+            if(querySnapshot.empty) {
+                listContainer.innerHTML = '<div style="text-align:center; color:#999; padding:20px;">No bookings found.</div>';
+                return;
+            }
+
+            let html = "";
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                html += `
+                    <div class="booking-item">
+                        <div class="b-left">
+                            <span class="b-name">${data.name || 'Unknown'}</span>
+                            <span class="b-dest">📍 ${data.destination}</span>
+                        </div>
+                        <div class="b-right">
+                            <span class="b-tickets">🎟 ${data.tickets} Tix</span>
+                            <div class="b-price">₹${(data.totalPrice || 0).toLocaleString('en-IN')}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            listContainer.innerHTML = html;
+
+        } catch (e) {
+            console.error(e);
+            listContainer.innerHTML = '<div style="color:red; text-align:center;">Failed to load data. Check console.</div>';
+            // Note: If this fails, it's likely due to missing Firestore Index. Check Logcat for a URL to create index.
+        }
+    };
+
+    function showNativeToast(msg) {
+        if(window.Android) window.Android.showToast(msg);
+        else console.log(msg);
+    }
+
+    // Init
+    window.loadTrips();
+</script>
+</body>
+</html>
